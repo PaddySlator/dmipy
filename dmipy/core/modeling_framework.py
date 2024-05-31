@@ -734,10 +734,21 @@ class MultiCompartmentModelProperties:
             self.parameter_types.update({name: old_parameter_types[name]})
             self.parameter_optimization_flags.update(
                 {name: old_optimization_flags[name]})
-
-        self._parameter_map.update({parameter_name: (None, 'fraction')})
-        self._inverted_parameter_map.update(
-            {(None, 'fraction'): parameter_name})
+        
+        #BUG FIX - error if linking more than one parameter        
+        #number of parameters already fixed
+        #TO DO: fix bug for fixing more than two parameters
+        n_fixed = sum(value == (None, 'fraction') for value in self._parameter_map.values())
+        
+        if n_fixed == 1:                       
+            self._parameter_map.update({parameter_name: (None, 'fraction_2')})
+            self._inverted_parameter_map.update(
+                {(None, 'fraction_2'): parameter_name})
+        else:
+            self._parameter_map.update({parameter_name: (None, 'fraction')})
+            self._inverted_parameter_map.update(
+                {(None, 'fraction'): parameter_name})
+            
 
     def _check_model_params_with_acquisition_params(self, acquisition_scheme):
         for model in self.models:
@@ -1366,7 +1377,7 @@ class MultiCompartmentModel(MultiCompartmentModelProperties):
                     parameter_name
                 )
 
-            if quantity == "signal":
+            if quantity == "signal":                                               
                 values = (values + partial_volume * model(
                     acquisition_scheme_or_vertices, **parameters))
             elif quantity == "FOD":
